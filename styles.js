@@ -1,5 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height'
+
 
 export default StyleSheet.create({
     container: {
@@ -37,4 +38,30 @@ export default StyleSheet.create({
         height: 50,
         //backgroundColor:'black'
     },
+    ViewTitle: {
+        alignContent: 'center',
+        alignItems: 'center'
+    },
+    title: {
+        color: 'red',
+        fontSize: 35
+    },
+    flipButton: {
+        fontWeight: 'bold',
+        fontSize: 50,
+        flex: 1,
+        marginLeft: 20
+    },
+    bellowButton: {
+        flex: 1,
+        position: "absolute",
+        bottom: 100,
+        alignSelf: "flex-start",
+        backgroundColor: 'black',
+        width: Dimensions.get('window').width
+    },
+    capture: {
+        color: 'white',
+        display: 'flex'
+    }
 })

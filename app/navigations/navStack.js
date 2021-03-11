@@ -3,8 +3,10 @@ import { createStackNavigator } from 'react-navigation-stack'
 import Login from '../screens/Login'
 import Setting from '../screens/Setting'
 import Home from '../screens/Home'
+import { Root } from "native-base";
+import React from 'react';
 
-export default createAppContainer(createStackNavigator(
+const AppNavigator = createAppContainer(createStackNavigator(
     {
         Login,
         Setting,
@@ -16,3 +18,9 @@ export default createAppContainer(createStackNavigator(
         }
     }
 ))
+
+
+export default () =>
+    <Root>
+        <AppNavigator />
+    </Root>;

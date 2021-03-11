@@ -8,8 +8,8 @@ import { ActivityIndicator, View } from 'react-native'
 
 export default function Setting({navigation}) {
     const [isReady, setIsReady] = useState(false)
-    const [url, setUrl] = useState('')
-    const [port, setPort] = useState('')
+    const [url, setUrl] = useState('192.168.10.100')
+    const [port, setPort] = useState('1369')
 
     useEffect(() => {
         Font.loadAsync({

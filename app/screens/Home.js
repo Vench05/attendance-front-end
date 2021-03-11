@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Header, Content, Fab, Item, Input, Label, Left, Body, Right, Title, Button, Icon, Text, List, ListItem } from 'native-base'
 import * as Font from 'expo-font';
-import { Ionicons, AntDesign, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons, AntDesign, Entypo, Feather, Octicons } from '@expo/vector-icons';
 import styles from '../../styles'
 import { ActivityIndicator, View, TouchableOpacity, Image } from 'react-native'
 import { Camera } from 'expo-camera';
@@ -11,7 +11,9 @@ import CameraOn from './CameraOn'
 export default function Home({navigation}) {
     const [isReady, setIsReady] = useState(false)
     const [active, setActive] = useState(false)
+    const [cameraActive, setCameraActive] = useState(false)
     const [hasPermission, setHasPermission] = useState(null);
+    const [cameraAction, setCameraAction] = useState('')
 
     useEffect(() => {
         Font.loadAsync({
@@ -29,6 +31,18 @@ export default function Home({navigation}) {
         console.log('Change');
     }, []);
 
+    function signIn() {
+        setCameraActive(!cameraActive)
+        setCameraAction('Sign-In')
+        setActive(!active)
+    }
+
+    function signOut() {
+        setCameraActive(!cameraActive)
+        setCameraAction('Sign-Out')
+        setActive(!active)
+    }
+
     if (isReady) {
         return (
             <Container>
@@ -45,19 +59,22 @@ export default function Home({navigation}) {
                     </Right>
                 </Header>
 
-                {true ? <CameraOn /> : <View /> }
+                {cameraActive ? <CameraOn title={cameraAction} /> : <View /> }
                 
                 
                 <Fab
                     active={active}
                     direction="up"
-                    // containerStyle={{}}
                     style={{ backgroundColor: '#5067FF' }}
                     position="bottomRight"
-                    onPress={() => setActive(!active)}>
+                    onPress={() => setActive(!active)}
+                    >
                     <Icon name="add" />
-                    <Button style={{ backgroundColor: '#34A34F' }} onPress={() => console.log('camera')} >
-                        <Icon name="ios-camera" />
+                    <Button style={{ backgroundColor: '#34A34F' }} onPress={signIn} >
+                        <Octicons name="sign-in" size={24} color="black" />
+                    </Button>
+                    <Button style={{ backgroundColor: 'red' }} onPress={signOut} >
+                        <Octicons name="sign-out" size={24} color="black" />
                     </Button>
                 </Fab>
                 
