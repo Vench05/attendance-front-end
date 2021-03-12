@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Container, Header, Content, Fab, Item, Input, Label, Left, Body, Right, Title, Button, Icon, Text, List, ListItem } from 'native-base'
 import * as Font from 'expo-font';
 import { Ionicons, AntDesign, Entypo, Feather, Octicons } from '@expo/vector-icons';
@@ -6,6 +6,9 @@ import styles from '../../styles'
 import { ActivityIndicator, View, TouchableOpacity, Image } from 'react-native'
 import { Camera } from 'expo-camera';
 import CameraOn from './CameraOn'
+import axios from 'axios'
+import env from '../../my_env'
+import { UserContext } from '../contexts/UserContext'
 
 
 export default function Home({navigation}) {
@@ -14,6 +17,9 @@ export default function Home({navigation}) {
     const [cameraActive, setCameraActive] = useState(false)
     const [hasPermission, setHasPermission] = useState(null);
     const [cameraAction, setCameraAction] = useState('')
+    const [timesheet, setTimesheet] = useState([])
+
+    const { user, setUser } = useContext(UserContext)
 
     useEffect(() => {
         Font.loadAsync({
@@ -32,6 +38,15 @@ export default function Home({navigation}) {
         setCameraActive(false)
     }, []);
 
+    useEffect(() => {         
+        getTimesheet()
+    }, [])
+
+    async function getTimesheet() {
+        await axios.get(`${env.api_url}/api/attendance/info/get?token=${user.token}`)
+            .then(res => setTimesheet(res.data.timesheet))
+    }
+
     function signIn() {
         setCameraActive(!cameraActive)
         setCameraAction('Time-In')
@@ -42,6 +57,7 @@ export default function Home({navigation}) {
         setCameraActive(false)
         setCameraAction('')
         setActive(false)
+        getTimesheet()
     }
 
     function signOut() {
@@ -65,8 +81,26 @@ export default function Home({navigation}) {
                         <Button onPress={() => navigation.navigate("Setting")} transparent><AntDesign name="setting" size={24} color="#f3f3f3" /></Button>
                     </Right>
                 </Header>
+                
 
-                {cameraActive ? <CameraOn cameraOff={cameraOff} title={cameraAction} navigation={navigation} /> : <View /> }
+                {cameraActive ? <CameraOn cameraOff={cameraOff} title={cameraAction} navigation={navigation} /> : 
+                    <Content>
+                        <List>
+                            {timesheet.map(data => (
+                                <ListItem noIndent style={{ backgroundColor: "#cde1f9" }} key={data.id}>
+                                    <Left>
+                                        <Text>{data.date}</Text>
+                                    </Left>
+                                    <Text>{data.project}</Text>
+                                    <Right>
+                                        <Icon name="arrow-forward" />
+                                    </Right>
+                                </ListItem>
+                            ))}
+
+                        </List>
+                    </Content>
+                }
                 
                 
                 <Fab
