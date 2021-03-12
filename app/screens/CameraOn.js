@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Camera } from 'expo-camera';
 import styles from '../../styles'
 import { Feather } from '@expo/vector-icons';
-import { Button, Icon, Text } from 'native-base'
+import { Button, Icon, Text, Toast } from 'native-base'
 import * as FaceDetector from 'expo-face-detector'
 import * as ImageManipulator from 'expo-image-manipulator';
+import axios from 'axios'
+import env from '../../my_env'
+import { UserContext } from '../contexts/UserContext'
 
-export default function CameraOn({title}) {
+export default function CameraOn({ title, navigation, cameraOff}) {
     const [hasPermission, setHasPermission] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.front);
     const [faces, setFaces] = useState([])
     const [cameraSnap, setCameraSnap] = useState({})
     const [imageData, setImageData] = useState({})
+    const { user } = useContext(UserContext)
 
     useEffect(() => {
         (async () => {
@@ -33,25 +37,73 @@ export default function CameraOn({title}) {
     async function snap() {
         await cameraSnap.takePictureAsync()
             .then(data => {
-                console.log(data)
                 setImageData(data)
-                cropImage()
+                cropImage(data)
             })
     }
 
-    async function cropImage() {
+    async function cropImage(data) {
         await ImageManipulator.manipulateAsync(
-            imageData.uri,
+            data.uri,
             [{
                 resize: {
-                    height: imageData.height / 4,
-                    width: imageData.width / 4
+                    height: data.height / 4,
+                    width: data.width / 4
                 },
             }],
             { base64: true }        
-        ).then(res => console.log(res))
+        ).then(res => attendance(res.base64))
+        
     }
     
+    async function attendance(imgBase64) {
+        if (imgBase64) {
+            let bodyFormData = new FormData()
+            if (title === 'Time-In') {                
+                bodyFormData.append('token', user.token);
+                bodyFormData.append('image', imgBase64);
+                bodyFormData.append('type', 'time-in');
+                await axios({
+                    method: 'post',
+                    url: `${env.api_url}/api/attendance`,
+                    data: bodyFormData,
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                }).then(res => {
+                    if (res.data.status == 'success'){
+                        Toast.show({
+                            text: 'Success',
+                            buttonText: "Dismiss",
+                            duration: 3000,
+                            position: "bottom"
+                        })
+                        navigation.navigate("AttendanceSubmit", { "title": title, "cameraOff": cameraOff})
+                    }
+                    else if (res.data.status == 'not-clear'){
+                        Toast.show({
+                            text: 'Did not Match\nPlease Try Again',
+                            buttonText: "Dismiss",
+                            duration: 3000,
+                            position: "bottom"
+                        })
+                    }
+                    else {
+                        Toast.show({
+                            text: 'Server Error',
+                            buttonText: "Dismiss",
+                            duration: 3000,
+                            position: "bottom"
+                        })
+                    }
+                }).catch(e => Toast.show({
+                    text: `Server Error, ${e}`,
+                    buttonText: "Dismiss",
+                    duration: 3000,
+                    position: "bottom"
+                }))
+            }            
+        }
+        
+    }
 
     if (hasPermission === null) {
         return <View />;

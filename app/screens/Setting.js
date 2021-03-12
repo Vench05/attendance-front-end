@@ -32,7 +32,7 @@ export default function Setting({navigation}) {
             <Container>
                 <Header >
                     <Left style={{ flex: 1 }}>
-                        <Button transparent onPress={() => navigation.navigate('Login')}>
+                        <Button transparent onPress={() => navigation.navigate('Home')}>
                             <Icon name='arrow-back' />
                         </Button>
                     </Left>

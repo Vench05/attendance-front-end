@@ -21,25 +21,32 @@ export default function Home({navigation}) {
             Roboto_medium: require('native-base/Fonts/Roboto_medium.ttf'),
             ...Ionicons.font,
         }).then(() => setIsReady(true))
+        // setCameraActive(!cameraActive)
     })
 
-    useEffect(() => {
+    useEffect(() => {        
         (async () => {
             const { status } = await Camera.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
-        console.log('Change');
+        setCameraActive(false)
     }, []);
 
     function signIn() {
         setCameraActive(!cameraActive)
-        setCameraAction('Sign-In')
+        setCameraAction('Time-In')
         setActive(!active)
+    }
+
+    function cameraOff() {
+        setCameraActive(false)
+        setCameraAction('')
+        setActive(false)
     }
 
     function signOut() {
         setCameraActive(!cameraActive)
-        setCameraAction('Sign-Out')
+        setCameraAction('Time-Out')
         setActive(!active)
     }
 
@@ -59,7 +66,7 @@ export default function Home({navigation}) {
                     </Right>
                 </Header>
 
-                {cameraActive ? <CameraOn title={cameraAction} /> : <View /> }
+                {cameraActive ? <CameraOn cameraOff={cameraOff} title={cameraAction} navigation={navigation} /> : <View /> }
                 
                 
                 <Fab
