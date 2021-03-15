@@ -63,11 +63,11 @@ export default function Login({navigation}) {
                     })
                     setPassword('')
                     break;
-                default:
-                    navigation.navigate("Home")
+                default:                    
                     console.log(res.data);
                     setPassword('')
                     setUser(res.data)
+                    navigation.navigate("Home")
                     break;
             }
         }).catch(e => Toast.show({

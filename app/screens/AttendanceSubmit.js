@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Container, Header, Content, Toast, Item, Input, Textarea, Left, Body, Right, Title, Button, Icon, Text, List, ListItem } from 'native-base'
+import { Container, Header, Content, Toast, Item, Input, Textarea, Left, Body, Right, Title, Button, Icon, Text, ListItem} from 'native-base'
 import * as Font from 'expo-font';
 import { Ionicons, AntDesign, Entypo, Feather, Octicons } from '@expo/vector-icons';
 import styles from '../../styles'
 import { ActivityIndicator, View } from 'react-native'
+import { Picker } from '@react-native-picker/picker';
+
 import axios from 'axios'
 import env from '../../my_env'
 import { UserContext } from '../contexts/UserContext'
@@ -13,6 +15,9 @@ export default function AttendanceSubmit({navigation}) {
     const [project, setProject] = useState('')
     const [task, setTask] = useState('')
     const [description, setDescription] = useState('')
+    const [timesheet, setTimesheet] = useState([])
+    const [timeIn, setTimeIn] = useState('')
+    const [timeInId, setTimeInId] = useState(0)
 
     const { user } = useContext(UserContext)
 
@@ -21,8 +26,10 @@ export default function AttendanceSubmit({navigation}) {
             Roboto: require('native-base/Fonts/Roboto.ttf'),
             Roboto_medium: require('native-base/Fonts/Roboto_medium.ttf'),
             ...Ionicons.font,
-        }).then(() => setIsReady(true))
-    })
+        }).then(() => setIsReady(true))        
+        const inprogress = navigation.getParam('timesheet').filter(data => !data.in_id)
+        setTimesheet(inprogress)
+    }, [])
 
     async function submit() {
         let bodyFormData = new FormData()
@@ -31,6 +38,8 @@ export default function AttendanceSubmit({navigation}) {
         bodyFormData.append('description', description);
         bodyFormData.append('token', user.token);
         bodyFormData.append('type', navigation.getParam('title'));
+        if (timeInId) { bodyFormData.append('timeInId', timeInId) }
+        
         await axios({
             method: 'post',
             url: `${env.api_url}/api/attendance/info`,
@@ -83,6 +92,29 @@ export default function AttendanceSubmit({navigation}) {
                         <Input disabled value={navigation.getParam('title')} style={{ textAlign: 'center' }} />
                         <Icon name='information-circle' />
                     </Item>
+
+                    {navigation.getParam('title') === 'Time-Out' ?
+                        (
+                            <Picker
+                                selectedValue={timeIn}
+                                onValueChange={(itemValue, itemIndex) => {
+                                    const selected = timesheet.filter(data => data.id === itemValue)
+                                    console.log(selected);
+                                    setTimeIn(itemValue)
+                                    setProject(selected[0].project)
+                                    setTask(selected[0].task)
+                                    setDescription(selected[0].description)
+                                    setTimeInId(itemValue)
+                                }}>
+                                {timesheet.map(data =>
+                                    <Picker.Item key={data.id} label={data.project} value={data.id} />
+                                )}
+                            </Picker>
+                                
+                        )
+
+                    : <View />} 
+                    
                     <Item regular style={{marginTop: 15}}>
                         <Input placeholder='Project' 
                             value={project}

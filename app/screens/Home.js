@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Container, Header, Content, Fab, Item, Input, Label, Left, Body, Right, Title, Button, Icon, Text, List, ListItem } from 'native-base'
+import { Container, Header, Content, Fab, Item, Input, Label, Left, Body, Right, Title, Button, Icon, Text, List, ListItem, Toast } from 'native-base'
 import * as Font from 'expo-font';
 import { Ionicons, AntDesign, Entypo, Feather, Octicons } from '@expo/vector-icons';
 import styles from '../../styles'
@@ -30,17 +30,18 @@ export default function Home({navigation}) {
         // setCameraActive(!cameraActive)
     })
 
-    useEffect(() => {        
+    useEffect(() => {      
         (async () => {
             const { status } = await Camera.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
         setCameraActive(false)
+        getTimesheet()
     }, []);
 
-    useEffect(() => {         
-        getTimesheet()
-    }, [])
+    // useEffect(() => {         
+    //     getTimesheet()
+    // }, [])
 
     async function getTimesheet() {
         await axios.get(`${env.api_url}/api/attendance/info/get?token=${user.token}`)
@@ -61,9 +62,22 @@ export default function Home({navigation}) {
     }
 
     function signOut() {
-        setCameraActive(!cameraActive)
-        setCameraAction('Time-Out')
-        setActive(!active)
+        console.log(timesheet);
+        const inProgress = timesheet.filter(data => !data.in_id)
+        console.log(inProgress);
+        if (inProgress.length > 0){
+            setCameraActive(!cameraActive)
+            setCameraAction('Time-Out')
+            setActive(!active)
+        } else {
+            Toast.show({
+                text: 'You don\'t have inprogress Task',
+                buttonText: 'Dismiss',
+                duration: 3000,
+                position: 'bottom'
+            })
+            setActive(!active)
+        }
     }
 
     if (isReady) {
@@ -83,11 +97,11 @@ export default function Home({navigation}) {
                 </Header>
                 
 
-                {cameraActive ? <CameraOn cameraOff={cameraOff} title={cameraAction} navigation={navigation} /> : 
+                {cameraActive ? <CameraOn timesheet={timesheet} cameraOff={cameraOff} title={cameraAction} navigation={navigation} /> : 
                     <Content>
-                        <List>
+                        <List >
                             {timesheet.map(data => (
-                                <ListItem noIndent style={{ backgroundColor: "#cde1f9" }} key={data.id}>
+                                <ListItem onPress={() => navigation.navigate("Task", {"data": data})} noIndent style={{ backgroundColor: data.log === 'In' ? "#cde1f9" : "#ffcc00" }} key={data.id}>
                                     <Left>
                                         <Text>{data.date}</Text>
                                     </Left>

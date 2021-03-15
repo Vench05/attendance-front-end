@@ -10,7 +10,7 @@ import axios from 'axios'
 import env from '../../my_env'
 import { UserContext } from '../contexts/UserContext'
 
-export default function CameraOn({ title, navigation, cameraOff}) {
+export default function CameraOn({ title, navigation, cameraOff, timesheet}) {
     const [hasPermission, setHasPermission] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.front);
     const [faces, setFaces] = useState([])
@@ -35,6 +35,7 @@ export default function CameraOn({ title, navigation, cameraOff}) {
     }
 
     async function snap() {
+        console.log('snap');
         await cameraSnap.takePictureAsync()
             .then(data => {
                 setImageData(data)
@@ -58,11 +59,12 @@ export default function CameraOn({ title, navigation, cameraOff}) {
     
     async function attendance(imgBase64) {
         if (imgBase64) {
+            console.log('attendance');
             let bodyFormData = new FormData()
-            if (title === 'Time-In') {                
+            // if (title === 'Time-In') {                
                 bodyFormData.append('token', user.token);
                 bodyFormData.append('image', imgBase64);
-                bodyFormData.append('type', 'time-in');
+                bodyFormData.append('type', title);
                 await axios({
                     method: 'post',
                     url: `${env.api_url}/api/attendance`,
@@ -76,7 +78,7 @@ export default function CameraOn({ title, navigation, cameraOff}) {
                             duration: 3000,
                             position: "bottom"
                         })
-                        navigation.navigate("AttendanceSubmit", { "title": title, "cameraOff": cameraOff})
+                        navigation.navigate("AttendanceSubmit", { "title": title, "cameraOff": cameraOff, "timesheet": timesheet})
                     }
                     else if (res.data.status == 'not-clear'){
                         Toast.show({
@@ -100,7 +102,7 @@ export default function CameraOn({ title, navigation, cameraOff}) {
                     duration: 3000,
                     position: "bottom"
                 }))
-            }            
+            // }            
         }
         
     }
